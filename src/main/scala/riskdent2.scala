@@ -28,21 +28,22 @@ object Solution {
    */
   case class order(startTime : Int, processingTime:Int)
 
-  var customerList = new scala.collection.mutable.PriorityQueue[order]().reverse
 
+
+  val startTimeOrd = Ordering.by { t: order => t.startTime }
+  val processingTimeOrd = Ordering.by { t: order => t.processingTime }
+
+  var customerList = new scala.collection.mutable.PriorityQueue[order]()(startTimeOrd).reverse
+
+
+  /*
   implicit def orderCompare(o:order):Ordered[order]=new Ordered[order]{
     def compare(other: order):Int =( o.startTime.compare(other.startTime) ) match {
       case 0 => o.processingTime.compareTo(other.processingTime)
       case c => c
     }
   }
-
-  implicit  val newOrdering =  new Ordered[order]{
-    def compare(other: order):Int =( o.startTime.compare(other.processingTime) ) match {
-      case 0 => o.processingTime.compareTo(other.startTime)
-      case c => c
-    }
-  }
+*/
 
   def process( out: PrintWriter): Unit = {
 
@@ -55,29 +56,34 @@ object Solution {
     }
 
 
-    var currentTime = 0
-    var waitingTimeSum =0
+    var currentTime:Long = 0
+    var waitingTimeSum:Double  =0
     var finalList = new scala.collection.mutable.ArrayBuffer[order]()
    // println(sortedList)
-    var pQ  = new mutable.PriorityQueue[order]( Ordering.by(_.processingTime).reverse).reverse
+    var pQ  = new mutable.PriorityQueue[order]()(processingTimeOrd).reverse
     while(customerList.nonEmpty || pQ.nonEmpty)
     {
       if (customerList.nonEmpty){
        // customerList.filter( p=> p.startTime <= currentTime  ).map(pQ.enqueue(_))
         // sortedList= sortedList.filter( p=> p.startTime > currentTime  )
-        pQ.enqueue(customerList.dequeue())
+
+        while (customerList.nonEmpty  && customerList.head.startTime <= currentTime){
+        //  println(customerList)
+          pQ.enqueue(customerList.dequeue())
+        }
+
       }
 
 
 
       if (pQ.nonEmpty){
        // println("----")
-        println(customerList)
+       // println(customerList)
         //println(pQ)
         var currObj=  pQ.dequeue()
         finalList+=currObj
-       println(currentTime)
-        println(waitingTimeSum)
+       //println(currentTime)
+        //println(waitingTimeSum)
         waitingTimeSum= waitingTimeSum+ currentTime-currObj.startTime +currObj.processingTime
 
         //sortedList = sortedList.filter(p=> p.startTime != currObj.startTime && p.processingTime  != currObj.processingTime)
@@ -103,7 +109,7 @@ object Solution {
         currentTime=currentTime +item.processingTime
       }
       */
-      println((waitingTimeSum.toDouble / finalList.length).toInt)
+      println((waitingTimeSum.toDouble / finalList.length).toLong)
      // out.print((waitingTimeSum.toDouble / finalList.length).toInt)
     }
 
